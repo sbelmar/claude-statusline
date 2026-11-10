@@ -14,6 +14,9 @@ if [ -n "$cwd" ] && git -C "$cwd" --no-optional-locks rev-parse --git-dir > /dev
   branch=$(git -C "$cwd" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null)
 fi
 
+# Logged-in Claude account
+user=$(jq -r '.oauthAccount.emailAddress // empty' "${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json" 2>/dev/null)
+
 # Context percentage
 used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
 
@@ -44,6 +47,7 @@ elif { [ -z "$week_raw" ] || [ "$week_pct" = "0" ]; } && [ -f "$WEEK_CACHE_FILE"
 fi
 
 # Color palette
+C_USER='\033[38;5;245m'         # Gray (logged-in account)
 C_FOLDER='\033[38;5;117m'       # Sky blue (folder)
 C_BRANCH_MAIN='\033[38;5;83m'   # Bright green (main/master branch)
 C_BRANCH_OTHER='\033[38;5;75m'  # Cornflower blue (other branches)
@@ -92,6 +96,11 @@ time_remaining() {
     echo "${m}m"
   fi
 }
+
+# Logged-in account
+if [ -n "$user" ]; then
+  printf "${C_USER}%s${NC} " "$user"
+fi
 
 # Folder
 printf "${C_FOLDER}%s${NC}" "$folder"
